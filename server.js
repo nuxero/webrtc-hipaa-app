@@ -1,6 +1,37 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var aws = require('aws-sdk');
+
+const S3_BUCKET = "webrtc-hipaa-app-files";
+aws.config.region = 'us-east-1';
+
+app.get('/sign-s3', (req, res) => {
+  const s3 = new aws.S3();
+  const fileName = req.query['file-name'];
+  const fileType = req.query['file-type'];
+  const s3Params = {
+    Bucket: S3_BUCKET,
+    Key: fileName,
+    Expires: 60,
+    ContentType: fileType,
+    ACL: 'public-read',
+    ServerSideEncryption: 'AES256' //Encryption at rest
+  };
+
+  s3.getSignedUrl('putObject', s3Params, (err, data) => {
+    if(err){
+      console.log(err);
+      return res.end();
+    }
+    const returnData = {
+      signedRequest: data,
+      url: `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}` //an https endpoint
+    };
+    res.write(JSON.stringify(returnData));
+    res.end();
+  });
+});
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');

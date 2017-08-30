@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.105.0",
     "express": "^4.15.4",
     "socket.io": "^2.0.3"
   }
