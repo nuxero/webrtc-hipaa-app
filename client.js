@@ -39,6 +39,7 @@ socket.on('created', function (room) {
         localStream = stream;
         localVideo.src = URL.createObjectURL(stream);
         isCaller = true;
+        notesDiv.style = "display: block";
     }).catch(function (err) {
         console.log('An error ocurred when accessing media devices');
     });
@@ -213,4 +214,43 @@ function receiveDataChannelMessage(event) {
     li.appendChild(a);
 
     filesSent.appendChild(li);
+}
+
+////// Adding saving to database
+var patient = document.getElementById('patient');
+var notes = document.getElementById('notes');
+var save = document.getElementById('save');
+var notesDiv = document.getElementById('notesDiv');
+
+save.onclick = function () {
+    if (patient === '' || notes === '') {
+        alert('Please fill the form');
+    } else {
+        saveData();
+    }
+}
+
+function saveData() {
+    const xhr = new XMLHttpRequest();
+    var params = JSON.stringify({
+        patient: patient.value,
+        notes: notes.value
+    });
+    xhr.open('POST', '/save');
+    
+    xhr.setRequestHeader("Content-type", "application/json; charset=utf-8");
+    xhr.setRequestHeader("Content-length", params.length);
+    xhr.setRequestHeader("Connection", "close");
+
+    xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                alert('Data saved');
+            }
+            else {
+                alert('Could not save data.');
+            }
+        }
+    };
+    xhr.send(params);
 }
